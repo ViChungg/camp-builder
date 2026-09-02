@@ -18,7 +18,9 @@ export default function Home() {
         container 
         spacing={2}
         sx={{
-          margin: 'auto'
+          margin: 'auto',
+          height: '90vh',
+          width: '80vw',
         }}
       >
         <IsoMap />

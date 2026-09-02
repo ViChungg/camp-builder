@@ -2,7 +2,7 @@
 'use client';
 
 import { CAMPING_DAYS, FLOORING } from "./AssetsList";
-import { Button } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import CategoryAccordion from "../category-accordion/CategoryAccordion";
 
 export interface AssetDef {
@@ -20,7 +20,18 @@ export interface AssetDef {
 
 export default function AssetsDrawer() {
   return (
-    <div className="w-100 overflow-auto bg-neutral-800 p-4 flex flex-col gap-3 rounded-lg">
+    <Box
+      className="bg-neutral-800 rounded-lg p-4"
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 2,
+        padding: 2,
+        width: "30%",
+        height: "100%",
+        
+      }}
+    >
       <h2 className="text-lg font-bold text-white mb-2">Asset Palette</h2>
       <Button 
         variant="contained" 
@@ -31,8 +42,14 @@ export default function AssetsDrawer() {
       >
         Clear All
       </Button>
-      <CategoryAccordion title="Camping Days" assetDefs={CAMPING_DAYS} />
-      <CategoryAccordion title="Flooring" assetDefs={FLOORING} />
-    </div>
+      <Box
+        sx={{
+          overflowY: "auto",
+        }}
+      >
+        <CategoryAccordion title="Camping Days" assetDefs={CAMPING_DAYS} />
+        <CategoryAccordion title="Flooring" assetDefs={FLOORING} />
+      </Box>
+    </Box>
   );
 }

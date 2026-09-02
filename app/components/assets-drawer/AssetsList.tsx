@@ -31,7 +31,7 @@ export const CAMPING_DAYS: AssetDef[] = [
     src: '/assets/camping_days/Tent.png',
     scaleModifier: 0.8,
     anchorY: 1,
-    offsetY: -10
+    offsetY: 25
   },
   { 
     id: 'ursine_spring', 

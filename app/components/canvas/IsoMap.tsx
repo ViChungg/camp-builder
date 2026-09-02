@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import * as PIXI from 'pixi.js';
 import { AssetDef } from '../assets-drawer/AssetsDrawer';
 import { usePlacement } from '../context/PlacementContext';
+import Grid from '@mui/material/Grid';
 
 const TILE_WIDTH = 64;
 const TILE_HEIGHT = 32;
@@ -154,10 +155,11 @@ export default function IsoMap() {
     async function init() {
       const app = new PIXI.Application();
       await app.init({
-        width: 1000,
-        height: 800,
+        resizeTo: containerRef.current, // Automatically resizes canvas to match container,
         backgroundColor: 0x1a1a1a,
         antialias: true,
+        autoDensity: true,
+        resolution: window.devicePixelRatio || 1,
       });
 
       if (isDestroyed) {
@@ -504,7 +506,8 @@ export default function IsoMap() {
   };
 
   return (
-    <div
+    <Grid
+      container
       ref={containerRef}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
@@ -512,6 +515,9 @@ export default function IsoMap() {
       className={`relative rounded-lg overflow-hidden border border-neutral-700 select-none ${
         movingAsset ? 'cursor-crosshair' : 'cursor-grab active:cursor-grabbing'
       }`}
+      sx={{
+        flex: 1
+      }}
     >
       {/* FLOATING ACTION MENU */}
       {selectedAsset && (
@@ -550,6 +556,6 @@ export default function IsoMap() {
           Click on desired tile footprint to place asset
         </div>
       )}
-    </div>
+    </Grid>
   );
 }
