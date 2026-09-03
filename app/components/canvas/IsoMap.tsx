@@ -4,8 +4,8 @@
 import { useEffect, useRef, useState } from 'react';
 import * as PIXI from 'pixi.js';
 import { AssetDef } from '../assets-drawer/AssetsDrawer';
+import { Grid } from '@mui/material';
 import { usePlacement } from '../context/PlacementContext';
-import Grid from '@mui/material/Grid';
 
 const TILE_WIDTH = 64;
 const TILE_HEIGHT = 32;
@@ -32,62 +32,13 @@ export default function IsoMap() {
   const worldRef = useRef<PIXI.Container | null>(null);
   const highlightGraphicRef = useRef<PIXI.Graphics | null>(null);
 
-  const { placingAsset, clearPlacing } = usePlacement();
+  const { placingAsset, clearPlacing, clearSignal } = usePlacement();
 
   const [selectedAsset, setSelectedAsset] = useState<SelectedAssetState | null>(null);
   const [movingAsset, setMovingAsset] = useState<MovingAssetData | null>(null);
 
   const movingAssetRef = useRef<MovingAssetData | null>(null);
   movingAssetRef.current = movingAsset;
-
-  // React to Context updates when an asset is clicked in CategoryAccordion
-  useEffect(() => {
-    if (!placingAsset || !worldRef.current) return;
-
-    // Capture in a constant so TypeScript knows it won't mutate or become null
-    const currentAsset = placingAsset;
-    let isActive = true;
-
-    async function preparePlacement() {
-      const imageSrc = currentAsset.src || '/assets/placeholder.png';
-      try {
-        const texture = await PIXI.Assets.load(imageSrc);
-        if (!isActive || !worldRef.current) return;
-
-        const sprite = new PIXI.Sprite(texture);
-        const W = currentAsset.widthInTiles;
-        const L = currentAsset.lengthInTiles;
-
-        const targetFootprintWidth = (W + L) * (TILE_WIDTH / 2);
-        const baseScale = targetFootprintWidth / texture.width;
-        const finalScale = baseScale * (currentAsset.scaleModifier || 1.0);
-
-        sprite.scale.set(finalScale);
-        sprite.anchor.set(0.5, 1.0);
-        sprite.alpha = 0.6;
-
-        worldRef.current.addChild(sprite);
-
-        setSelectedAsset(null);
-        setMovingAsset({
-          sprite,
-          asset: currentAsset,
-          isFlipped: false,
-        });
-
-        // Clear context state now that IsoMap internal state owns movingAsset
-        clearPlacing();
-      } catch (err) {
-        console.error('Failed to load asset for placement:', err);
-      }
-    }
-
-    preparePlacement();
-
-    return () => {
-      isActive = false;
-    };
-  }, [placingAsset, clearPlacing]);
 
   // Screen to Grid math helpers
   const gridToScreen = (gx: number, gy: number) => ({
@@ -111,24 +62,19 @@ export default function IsoMap() {
       return;
     }
 
-    // 1. Top apex: Top corner of origin tile (gx, gy)
     const top = gridToScreen(gx, gy);
-
-    // 2. Right corner: Rightmost point of tile (gx + W - 1, gy)
     const rightBase = gridToScreen(gx + W - 1, gy);
     const right = {
       x: rightBase.x + TILE_WIDTH / 2,
       y: rightBase.y + TILE_HEIGHT / 2,
     };
 
-    // 3. Bottom apex: Bottommost point of tile (gx + W - 1, gy + L - 1)
     const bottomBase = gridToScreen(gx + W - 1, gy + L - 1);
     const bottom = {
       x: bottomBase.x,
       y: bottomBase.y + TILE_HEIGHT,
     };
 
-    // 4. Left corner: Leftmost point of tile (gx, gy + L - 1)
     const leftBase = gridToScreen(gx, gy + L - 1);
     const left = {
       x: leftBase.x - TILE_WIDTH / 2,
@@ -148,6 +94,102 @@ export default function IsoMap() {
     graphic.stroke({ width: 2, color: strokeColor });
   };
 
+  // Helper to cancel active placement mode
+  const cancelPlacement = () => {
+    const activeMoving = movingAssetRef.current;
+    if (!activeMoving) return;
+
+    if (worldRef.current && activeMoving.sprite) {
+      worldRef.current.removeChild(activeMoving.sprite);
+      activeMoving.sprite.destroy();
+    }
+
+    if (highlightGraphicRef.current) {
+      highlightGraphicRef.current.clear();
+    }
+
+    setMovingAsset(null);
+  };
+
+  // Listen for Escape key & outside click to cancel placement
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && movingAssetRef.current) {
+        cancelPlacement();
+      }
+    };
+
+    const handlePointerDownOutside = (e: PointerEvent) => {
+      if (
+        movingAssetRef.current &&
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        cancelPlacement();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('pointerdown', handlePointerDownOutside);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('pointerdown', handlePointerDownOutside);
+    };
+  }, []);
+
+  // React to Context updates when an asset is clicked in CategoryAccordion
+  useEffect(() => {
+    if (!placingAsset || !worldRef.current) return;
+
+    const currentAsset = placingAsset;
+    let isActive = true;
+
+    async function preparePlacement() {
+      const imageSrc = currentAsset.src || '/assets/placeholder.png';
+      try {
+        const texture = await PIXI.Assets.load(imageSrc);
+        if (!isActive || !worldRef.current) return;
+
+        // Cancel existing pending placement if user selects another item midway
+        if (movingAssetRef.current) {
+          cancelPlacement();
+        }
+
+        const sprite = new PIXI.Sprite(texture);
+        const W = currentAsset.widthInTiles;
+        const L = currentAsset.lengthInTiles;
+
+        const targetFootprintWidth = (W + L) * (TILE_WIDTH / 2);
+        const baseScale = targetFootprintWidth / texture.width;
+        const finalScale = baseScale * (currentAsset.scaleModifier || 1.0);
+
+        sprite.scale.set(finalScale);
+        sprite.anchor.set(0.5, 1.0);
+        sprite.alpha = 0.6;
+
+        worldRef.current.addChild(sprite);
+
+        setSelectedAsset(null);
+        setMovingAsset({
+          sprite,
+          asset: currentAsset,
+          isFlipped: false,
+        });
+
+        clearPlacing();
+      } catch (err) {
+        console.error('Failed to load asset for placement:', err);
+      }
+    }
+
+    preparePlacement();
+
+    return () => {
+      isActive = false;
+    };
+  }, [placingAsset, clearPlacing]);
+
   useEffect(() => {
     if (!containerRef.current) return;
     let isDestroyed = false;
@@ -155,7 +197,7 @@ export default function IsoMap() {
     async function init() {
       const app = new PIXI.Application();
       await app.init({
-        resizeTo: containerRef.current, // Automatically resizes canvas to match container,
+        resizeTo: containerRef.current || undefined,
         backgroundColor: 0x1a1a1a,
         antialias: true,
         autoDensity: true,
@@ -179,15 +221,11 @@ export default function IsoMap() {
       app.stage.addChild(world);
       worldRef.current = world;
 
-      // Overlay Graphic for footprint selection
       const highlightGraphic = new PIXI.Graphics();
       highlightGraphic.zIndex = 999999;
       world.addChild(highlightGraphic);
       highlightGraphicRef.current = highlightGraphic;
 
-      // -------------------------------------------------------------
-      // 1. PAN / MOVE EVENTS (Using Refs to access current state)
-      // -------------------------------------------------------------
       app.stage.eventMode = 'static';
       app.stage.hitArea = app.screen;
 
@@ -216,7 +254,6 @@ export default function IsoMap() {
           const W = activeMoving.asset.widthInTiles;
           const L = activeMoving.asset.lengthInTiles;
 
-          // Treat cursor tile as the bottom-most tile (front corner) of the asset
           const gx = cursorGrid.gx - (W - 1);
           const gy = cursorGrid.gy - (L - 1);
 
@@ -252,9 +289,6 @@ export default function IsoMap() {
       app.stage.on('pointerup', stopDragging);
       app.stage.on('pointerupoutside', stopDragging);
 
-      // -------------------------------------------------------------
-      // 2. ZOOM LOGIC
-      // -------------------------------------------------------------
       const canvasElement = app.canvas;
 
       const handleWheel = (e: WheelEvent) => {
@@ -288,9 +322,6 @@ export default function IsoMap() {
 
       canvasElement.addEventListener('wheel', handleWheel, { passive: false });
 
-      // -------------------------------------------------------------
-      // 3. OPTIMIZED TILE RENDER
-      // -------------------------------------------------------------
       const tileContext = new PIXI.GraphicsContext()
         .poly([
           0, 0,
@@ -340,7 +371,6 @@ export default function IsoMap() {
     const W = activeMoving.asset.widthInTiles;
     const L = activeMoving.asset.lengthInTiles;
 
-    // Align footprint so cursor is on the bottom-most tile
     const gx = cursorGrid.gx - (W - 1);
     const gy = cursorGrid.gy - (L - 1);
 
@@ -475,9 +505,6 @@ export default function IsoMap() {
     }
   };
 
-  // -------------------------------------------------------------
-  // ACTIONS MENU HANDLERS
-  // -------------------------------------------------------------
   const handleFlip = () => {
     if (!selectedAsset) return;
     const { sprite } = selectedAsset;
@@ -505,6 +532,34 @@ export default function IsoMap() {
     setSelectedAsset(null);
   };
 
+  useEffect(() => {
+    if (clearSignal === 0 || !worldRef.current) return;
+
+    const world = worldRef.current;
+
+    // Filter out non-tile and non-highlight children (all asset sprites)
+    // We keep tile graphics and the highlight graphic (zIndex === 999999)
+    const childrenToRemove = world.children.filter((child) => {
+      return child instanceof PIXI.Sprite;
+    });
+
+    childrenToRemove.forEach((sprite) => {
+      world.removeChild(sprite);
+      sprite.destroy();
+    });
+
+    // Reset selected asset state
+    setSelectedAsset(null);
+
+    // If currently placing/moving an asset, cancel placement
+    if (movingAssetRef.current) {
+      if (highlightGraphicRef.current) {
+        highlightGraphicRef.current.clear();
+      }
+      setMovingAsset(null);
+    }
+  }, [clearSignal]);
+
   return (
     <Grid
       container
@@ -512,7 +567,7 @@ export default function IsoMap() {
       onDragOver={handleDragOver}
       onDrop={handleDrop}
       onClick={handleCanvasClick}
-      className={`relative rounded-lg overflow-hidden border border-neutral-700 select-none ${
+      className={`relative w-full h-full overflow-hidden border border-neutral-700 select-none ${
         movingAsset ? 'cursor-crosshair' : 'cursor-grab active:cursor-grabbing'
       }`}
       sx={{
@@ -552,8 +607,11 @@ export default function IsoMap() {
 
       {/* MOVING TOOLTIP BANNER */}
       {movingAsset && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-blue-600/90 text-white px-4 py-2 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm pointer-events-none">
-          Click on desired tile footprint to place asset
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-blue-600/90 text-white px-4 py-2 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm pointer-events-none flex items-center gap-2">
+          <span>Click on desired tile footprint to place asset</span>
+          <span className="bg-blue-800/80 px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider">
+            Press Esc to cancel
+          </span>
         </div>
       )}
     </Grid>

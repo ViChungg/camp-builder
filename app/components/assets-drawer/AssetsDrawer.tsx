@@ -4,6 +4,7 @@
 import { CAMPING_DAYS, FLOORING } from "./AssetsList";
 import { Box, Button } from "@mui/material";
 import CategoryAccordion from "../category-accordion/CategoryAccordion";
+import { usePlacement } from "../context/PlacementContext";
 
 export interface AssetDef {
   id: string;
@@ -19,6 +20,7 @@ export interface AssetDef {
 }
 
 export default function AssetsDrawer() {
+  const { triggerClearAll } = usePlacement();
   return (
     <Box
       className="bg-neutral-800 rounded-lg p-4"
@@ -38,6 +40,7 @@ export default function AssetsDrawer() {
         color="error"
         onClick={() => {
           // Clear all placed assets logic here
+          triggerClearAll();
         }}
       >
         Clear All

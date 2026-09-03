@@ -42,8 +42,7 @@ export const CAMPING_DAYS: AssetDef[] = [
     src: '/assets/camping_days/Ursine_Spring.png',
     scaleModifier: 0.7,
     anchorY: 0.1,
-    offsetY: 10,
-    offsetX: 10
+    offsetY: 40,
   },
   {
     id: 'camper_van',
@@ -52,9 +51,9 @@ export const CAMPING_DAYS: AssetDef[] = [
     lengthInTiles: 3,
     color: 0x3498db,
     src: '/assets/camping_days/Camper_Van.png',
-    scaleModifier: 0.6,
-    // anchorY: 1,
-    offsetY: -10
+    scaleModifier: 0.7,
+    offsetY: 30,
+    offsetX: 0
   },
   {
     id: 'bbq_grill',
@@ -76,7 +75,7 @@ export const CAMPING_DAYS: AssetDef[] = [
     src: '/assets/camping_days/Bonfire.png',
     scaleModifier: 0.5,
     anchorY: 1,
-    offsetY: 20
+    offsetY: 10
   },
   {
     id: 'camping_mat',
@@ -87,7 +86,7 @@ export const CAMPING_DAYS: AssetDef[] = [
     src: '/assets/camping_days/Camping_Mat.png',
     scaleModifier: 0.75,
     anchorY: 1,
-    offsetY: -10
+    offsetY: 25
   },
   {
     id: 'chair_forwards',
@@ -96,9 +95,9 @@ export const CAMPING_DAYS: AssetDef[] = [
     lengthInTiles: 1,
     color: 0x9b59b6,
     src: '/assets/camping_days/Chair_Forwards.png',
-    scaleModifier: 0.8,
+    scaleModifier: 0.6,
     anchorY: 1,
-    offsetY: 25
+    offsetY: 15
   },
   {
     id: 'chair_behind',
@@ -107,9 +106,9 @@ export const CAMPING_DAYS: AssetDef[] = [
     lengthInTiles: 1,
     color: 0x9b59b6,
     src: '/assets/camping_days/Chair_Behind.png',
-    scaleModifier: 0.8,
+    scaleModifier: 0.6,
     anchorY: 1,
-    offsetY: 25
+    offsetY: 15
   },
   {
     id: 'bread_basket_large',
@@ -120,7 +119,7 @@ export const CAMPING_DAYS: AssetDef[] = [
     src: '/assets/camping_days/Bread_Basket_Large.png',
     scaleModifier: 0.8,
     anchorY: 1,
-    offsetY: 20
+    offsetY: 10
   },
   {
     id: 'outdoor_tv',
@@ -131,7 +130,7 @@ export const CAMPING_DAYS: AssetDef[] = [
     src: '/assets/camping_days/Outdoor_TV.png',
     scaleModifier: 0.9,
     anchorY: 1,
-    offsetY: -10
+    offsetY: 30
   },
   {
     id: 'small_table',
@@ -142,8 +141,7 @@ export const CAMPING_DAYS: AssetDef[] = [
     src: '/assets/camping_days/Small_Table.png',
     scaleModifier: 0.7,
     anchorY: 1,
-    offsetY: 20,
-    offsetX: -10
+    offsetY: 10,
   },
   {
     id: 'red_shell_tv',
@@ -152,9 +150,9 @@ export const CAMPING_DAYS: AssetDef[] = [
     lengthInTiles: 1,
     color: 0xe74c3c,
     src: '/assets/camping_days/Red_Shell_TV.png',
-    scaleModifier: 0.5,
+    scaleModifier: 0.6,
     anchorY: 1,
-    offsetY: 20
+    offsetY: 10
   },
   {
     id: 'large_pine',
@@ -163,6 +161,8 @@ export const CAMPING_DAYS: AssetDef[] = [
     lengthInTiles: 1,
     color: 0x2ecc71,
     src: '/assets/camping_days/Large_Pine.png',
+    scaleModifier: 1,
+    offsetY: 10
   },
   {
     id: 'four_apple_trees',
@@ -171,6 +171,8 @@ export const CAMPING_DAYS: AssetDef[] = [
     lengthInTiles: 2,
     color: 0x2ecc71,
     src: '/assets/camping_days/Four_Apple_Trees.png',
+    scaleModifier: 1,
+    offsetY: 30
   },
   {
     id: 'cozy_cinema',
@@ -179,6 +181,8 @@ export const CAMPING_DAYS: AssetDef[] = [
     lengthInTiles: 3,
     color: 0x2ecc71,
     src: '/assets/camping_days/Cozy_Cinema.png',
+    scaleModifier: 1,
+    offsetY: 50
   },
   {
     id: 'picnic_mat',
@@ -187,6 +191,8 @@ export const CAMPING_DAYS: AssetDef[] = [
     lengthInTiles: 3,
     color: 0x2ecc71,
     src: '/assets/camping_days/Picnic_Mat.png',
+    scaleModifier: 1,
+    offsetY: 50
   },
   {
     id: 'fancy_tent',
@@ -195,6 +201,8 @@ export const CAMPING_DAYS: AssetDef[] = [
     lengthInTiles: 3,
     color: 0x2ecc71,
     src: '/assets/camping_days/Fancy_Tent.png',
+    scaleModifier: 1,
+    offsetY: 50
   },
   {
     id: 'camp_stove',
@@ -203,6 +211,9 @@ export const CAMPING_DAYS: AssetDef[] = [
     lengthInTiles: 2,
     color: 0x2ecc71,
     src: '/assets/camping_days/Camp_Stove.png',
+    scaleModifier: 1,
+    offsetY: 32,
+    offsetX: 0
   },
   {
     id: 'wooden_fence',
@@ -224,5 +235,6 @@ export const FLOORING: AssetDef[] = [
     lengthInTiles: 1,
     color: 0x8B4513,
     src: '/assets/flooring/Dirt_Path.png',
+    offsetY: 16
   }
 ];
