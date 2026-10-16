@@ -17,6 +17,7 @@ export interface AssetDef {
   anchorY?: number;       // Fine-tune bottom alignment (default 1.0)
   offsetY?: number;       // Pixel shift: positive moves DOWN, negative moves UP
   offsetX?: number;
+  category?: string;       // Optional category for grouping
 }
 
 export default function AssetsDrawer() {

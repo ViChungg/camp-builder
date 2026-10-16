@@ -235,6 +235,194 @@ export const FLOORING: AssetDef[] = [
     lengthInTiles: 1,
     color: 0x8B4513,
     src: '/assets/flooring/Dirt_Path.png',
-    offsetY: 16
+    offsetY: 16,
+    category: 'flooring'
+  },
+  {
+    id: 'dirt_path_1',
+    name: 'Dirt Path 1',
+    widthInTiles: 1, 
+    lengthInTiles: 1,
+    color: 0x8B4513,
+    src: '/assets/flooring/Dirt_Path_1.png',
+    scaleModifier: 1.1,
+    offsetY: 18,
+    category: 'flooring'
+  },
+  {
+    id: 'meadow_path',
+    name: 'Meadow Path',
+    widthInTiles: 1,
+    lengthInTiles: 1,
+    color: 0x8B4513,
+    src: '/assets/flooring/Meadow_Path.png',
+    offsetY: 16,
+    category: 'flooring'
+  },
+  {
+    id: 'water_path',
+    name: 'Water Path',
+    widthInTiles: 1,
+    lengthInTiles: 1,
+    color: 0x8B4513,
+    src: '/assets/flooring/Water_Path.png',
+    scaleModifier: 1.1,
+    offsetY: 18,
+    category: 'flooring'
+  },
+  {
+    id: 'snowfield',
+    name: 'Snowfield',
+    widthInTiles: 1,
+    lengthInTiles: 1,
+    color: 0x8B4513,
+    src: '/assets/flooring/Snowfield.png',
+    scaleModifier: 1.1,
+    offsetY: 17,
+    category: 'flooring'
+  },
+  {
+    id: 'stonebed_path',
+    name: 'Stonebed Path',
+    widthInTiles: 1,
+    lengthInTiles: 1,
+    color: 0x8B4513,
+    src: '/assets/flooring/Stonebed_Path.png',
+    scaleModifier: 1.1,
+    offsetY: 17,
+    category: 'flooring'
+  },
+  {
+    id: 'brick_road',
+    name: 'Brick Road',
+    widthInTiles: 1,
+    lengthInTiles: 1,
+    color: 0x8B4513,
+    src: '/assets/flooring/Brick_Road.png',
+    scaleModifier: 1.1,
+    offsetY: 19,
+    category: 'flooring'
+  },
+  {
+    id: 'brick_road_1',
+    name: 'Brick Road 1',
+    widthInTiles: 1,
+    lengthInTiles: 1,
+    color: 0x8B4513,
+    src: '/assets/flooring/Brick_Road_1.png',
+    scaleModifier: 1.1,
+    offsetY: 18,
+    offsetX: 2,
+    category: 'flooring'
+  },
+  {
+    id: 'brick_road_2',
+    name: 'Brick Road 2',
+    widthInTiles: 1,
+    lengthInTiles: 1,
+    color: 0x8B4513,
+    src: '/assets/flooring/Brick_Road_2.png',
+    scaleModifier: 1.1,
+    offsetY: 17,
+    category: 'flooring'
+  },
+  {
+    id: 'brick_road_3',
+    name: 'Brick Road 3',
+    widthInTiles: 1,
+    lengthInTiles: 1,
+    color: 0x8B4513,
+    src: '/assets/flooring/Brick_Road_3.png',
+    scaleModifier: 1.1,
+    offsetY: 18,
+    category: 'flooring'
+  },
+  {
+    id: 'brick_road_4',
+    name: 'Brick Road 4',
+    widthInTiles: 1,
+    lengthInTiles: 1,
+    color: 0x8B4513,
+    src: '/assets/flooring/Brick_Road_4.png',
+    scaleModifier: 1.1,
+    offsetY: 17,
+    category: 'flooring'
+  },
+  {
+    id: 'brick_road_5',
+    name: 'Brick Road 5',
+    widthInTiles: 1,
+    lengthInTiles: 1,
+    color: 0x8B4513,
+    src: '/assets/flooring/Brick_Road_5.png',
+    scaleModifier: 1.1,
+    offsetY: 17,
+    category: 'flooring'
+  },
+  {
+    id: 'brick_road_6',
+    name: 'Brick Road 6',
+    widthInTiles: 1,
+    lengthInTiles: 1,
+    color: 0x8B4513,
+    src: '/assets/flooring/Brick_Road_6.png',
+    scaleModifier: 1.1,
+    offsetY: 17,
+    category: 'flooring'
+  },
+  {
+    id: 'brick_road_7',
+    name: 'Brick Road 7',
+    widthInTiles: 1,
+    lengthInTiles: 1,
+    color: 0x8B4513,
+    src: '/assets/flooring/Brick_Road_7.png',
+    scaleModifier: 1.1,
+    offsetY: 17,
+    category: 'flooring'
+  },
+  {
+    id: 'brick_road_8',
+    name: 'Brick Road 8',
+    widthInTiles: 1,
+    lengthInTiles: 1,
+    color: 0x8B4513,
+    src: '/assets/flooring/Brick_Road_8.png',
+    scaleModifier: 1.1,
+    offsetY: 17,
+    category: 'flooring'
+  },
+  {
+    id: 'brick_road_9',
+    name: 'Brick Road 9',
+    widthInTiles: 1,
+    lengthInTiles: 1,
+    color: 0x8B4513,
+    src: '/assets/flooring/Brick_Road_9.png',
+    scaleModifier: 1.1,
+    offsetY: 17,
+    category: 'flooring'
+  },
+  {
+    id: 'brick_road_10',
+    name: 'Brick Road 10',
+    widthInTiles: 1,
+    lengthInTiles: 1,
+    color: 0x8B4513,
+    src: '/assets/flooring/Brick_Road_10.png',
+    scaleModifier: 1.1,
+    offsetY: 17,
+    category: 'flooring'
+  },
+  {
+    id: 'brick_road_11',
+    name: 'Brick Road 11',
+    widthInTiles: 1,
+    lengthInTiles: 1,
+    color: 0x8B4513,
+    src: '/assets/flooring/Brick_Road_11.png',
+    scaleModifier: 1.1,
+    offsetY: 17,
+    category: 'flooring'
   }
 ];

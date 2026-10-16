@@ -31,6 +31,15 @@ export default function IsoMap() {
   const appRef = useRef<PIXI.Application | null>(null);
   const worldRef = useRef<PIXI.Container | null>(null);
   const highlightGraphicRef = useRef<PIXI.Graphics | null>(null);
+  // Key format: `${gx}_${gy}` -> PIXI.Sprite
+  // 1. Flooring layer (1 tile per coordinate)
+  const placedFloorsRef = useRef<Map<string, PIXI.Sprite>>(new Map());
+
+  // 2. Objects layer (furniture, decorations, buildings)
+  const placedObjectsRef = useRef<Set<PIXI.Sprite>>(new Set());
+  
+  const isPaintingRef = useRef(false);
+  const lastPaintedTileRef = useRef<{ gx: number; gy: number } | null>(null);
 
   const { placingAsset, clearPlacing, clearSignal } = usePlacement();
 
@@ -233,9 +242,34 @@ export default function IsoMap() {
       let dragStart = { x: 0, y: 0 };
       let pointerDownPos = { x: 0, y: 0 };
 
-      app.stage.on('pointerdown', (e) => {
-        if (movingAssetRef.current) return;
 
+      app.stage.on('pointerdown', (e) => {
+        const activeMoving = movingAssetRef.current;
+
+        // 1. FLOORING DRAG-PAINT INITIATION
+        if (activeMoving) {
+          const isFlooring = activeMoving.asset.category === 'flooring';
+          if (isFlooring) {
+            isPaintingRef.current = true;
+
+            const localPos = world.toLocal(e.global);
+            const cursorGrid = screenToGrid(localPos.x, localPos.y);
+
+            const W = activeMoving.asset.widthInTiles;
+            const L = activeMoving.asset.lengthInTiles;
+
+            const gx = cursorGrid.gx - (W - 1);
+            const gy = cursorGrid.gy - (L - 1);
+
+            if (gx >= 0 && gy >= 0 && gx + W <= GRID_SIZE && gy + L <= GRID_SIZE) {
+              spawnAssetOnGrid(gx, gy, activeMoving.asset);
+              lastPaintedTileRef.current = { gx, gy };
+            }
+          }
+          return;
+        }
+
+        // 2. CANVAS PANNING
         isDraggingPan = true;
         dragStart = {
           x: e.global.x - world.x,
@@ -269,6 +303,14 @@ export default function IsoMap() {
 
           const isValid = gx >= 0 && gy >= 0 && gx + W <= GRID_SIZE && gy + L <= GRID_SIZE;
           drawFootprintHighlight(gx, gy, W, L, isValid);
+          const isFlooring = activeMoving.asset.category === 'flooring';
+          if (isPaintingRef.current && isFlooring && isValid) {
+            const last = lastPaintedTileRef.current;
+            if (!last || last.gx !== gx || last.gy !== gy) {
+              spawnAssetOnGrid(gx, gy, activeMoving.asset);
+              lastPaintedTileRef.current = { gx, gy };
+            }
+          }
           return;
         }
 
@@ -278,7 +320,12 @@ export default function IsoMap() {
         }
       });
 
-      const stopDragging = (e: PIXI.FederatedPointerEvent) => {
+      const stopPaintingAndDragging = (e: PIXI.FederatedPointerEvent) => {
+        // Release flooring brush
+        isPaintingRef.current = false;
+        lastPaintedTileRef.current = null;
+
+        // Handle pan stop
         const distMoved = Math.hypot(e.global.x - pointerDownPos.x, e.global.y - pointerDownPos.y);
         if (distMoved < 5 && e.target === app.stage) {
           setSelectedAsset(null);
@@ -286,8 +333,8 @@ export default function IsoMap() {
         isDraggingPan = false;
       };
 
-      app.stage.on('pointerup', stopDragging);
-      app.stage.on('pointerupoutside', stopDragging);
+      app.stage.on('pointerup', stopPaintingAndDragging);
+      app.stage.on('pointerupoutside', stopPaintingAndDragging);
 
       const canvasElement = app.canvas;
 
@@ -375,25 +422,21 @@ export default function IsoMap() {
     const gy = cursorGrid.gy - (L - 1);
 
     if (gx >= 0 && gy >= 0 && gx + W <= GRID_SIZE && gy + L <= GRID_SIZE) {
-      const top = gridToScreen(gx, gy);
-      const bottomBase = gridToScreen(gx + W - 1, gy + L - 1);
+      spawnAssetOnGrid(gx, gy, activeMoving.asset);
 
-      const footprintCenterX = top.x;
-      const footprintCenterY = (top.y + bottomBase.y + TILE_HEIGHT) / 2;
+      // If it's NOT flooring (e.g. furniture/decor), exit placement mode after one click
+      if (activeMoving.asset.category !== 'flooring') {
+        if (worldRef.current && activeMoving.sprite) {
+          worldRef.current.removeChild(activeMoving.sprite);
+          activeMoving.sprite.destroy();
+        }
 
-      activeMoving.sprite.x = footprintCenterX + (activeMoving.asset.offsetX || 0);
-      activeMoving.sprite.y = footprintCenterY + (activeMoving.asset.offsetY || 0);
+        if (highlightGraphicRef.current) {
+          highlightGraphicRef.current.clear();
+        }
 
-      activeMoving.sprite.zIndex = bottomBase.y + TILE_HEIGHT;
-      activeMoving.sprite.alpha = 1.0;
-
-      bindSpriteInteraction(activeMoving.sprite, activeMoving.asset, gx, gy, activeMoving.isFlipped);
-
-      if (highlightGraphicRef.current) {
-        highlightGraphicRef.current.clear();
+        setMovingAsset(null);
       }
-
-      setMovingAsset(null);
     }
   };
 
@@ -468,8 +511,10 @@ export default function IsoMap() {
   const spawnAssetOnGrid = async (gx: number, gy: number, asset: AssetDef) => {
     if (!worldRef.current) return;
 
+    const tileKey = `${gx}_${gy}`;
     const W = asset.widthInTiles;
     const L = asset.lengthInTiles;
+    const isFlooring = asset.category === 'flooring';
 
     const top = gridToScreen(gx, gy);
     const bottomBase = gridToScreen(gx + W - 1, gy + L - 1);
@@ -483,6 +528,16 @@ export default function IsoMap() {
       const texture = await PIXI.Assets.load(imageSrc);
       if (!worldRef.current) return;
 
+      // A. IF PLACING FLOORING: Only replace existing FLOORING at this tile
+      if (isFlooring) {
+        const existingFloor = placedFloorsRef.current.get(tileKey);
+        if (existingFloor) {
+          worldRef.current.removeChild(existingFloor);
+          existingFloor.destroy();
+          placedFloorsRef.current.delete(tileKey);
+        }
+      }
+
       const sprite = new PIXI.Sprite(texture);
 
       const targetFootprintWidth = (W + L) * (TILE_WIDTH / 2);
@@ -495,11 +550,21 @@ export default function IsoMap() {
       sprite.x = footprintCenterX + (asset.offsetX || 0);
       sprite.y = footprintCenterY + (asset.offsetY || 0);
 
-      sprite.zIndex = bottomBase.y + TILE_HEIGHT;
+      // Depth Sorting: Flooring sits slightly behind objects at the same tile
+      sprite.zIndex = isFlooring
+        ? bottomBase.y + TILE_HEIGHT - 0.1
+        : bottomBase.y + TILE_HEIGHT;
 
       bindSpriteInteraction(sprite, asset, gx, gy, false);
 
       worldRef.current.addChild(sprite);
+
+      // B. STORE IN APPROPRIATE LAYER TRACKER
+      if (isFlooring) {
+        placedFloorsRef.current.set(tileKey, sprite);
+      } else {
+        placedObjectsRef.current.add(sprite);
+      }
     } catch (error) {
       console.error(`Failed to load asset texture at ${imageSrc}:`, error);
     }
@@ -527,8 +592,19 @@ export default function IsoMap() {
 
   const handleDelete = () => {
     if (!selectedAsset || !worldRef.current) return;
-    worldRef.current.removeChild(selectedAsset.sprite);
-    selectedAsset.sprite.destroy();
+
+    const { sprite, gx, gy, asset } = selectedAsset;
+    const tileKey = `${gx}_${gy}`;
+
+    worldRef.current.removeChild(sprite);
+
+    if (asset.category === 'flooring') {
+      placedFloorsRef.current.delete(tileKey);
+    } else {
+      placedObjectsRef.current.delete(sprite);
+    }
+
+    sprite.destroy();
     setSelectedAsset(null);
   };
 
@@ -537,21 +613,19 @@ export default function IsoMap() {
 
     const world = worldRef.current;
 
-    // Filter out non-tile and non-highlight children (all asset sprites)
-    // We keep tile graphics and the highlight graphic (zIndex === 999999)
-    const childrenToRemove = world.children.filter((child) => {
-      return child instanceof PIXI.Sprite;
-    });
-
+    // Clear all flooring and object sprites
+    const childrenToRemove = world.children.filter((child) => child instanceof PIXI.Sprite);
     childrenToRemove.forEach((sprite) => {
       world.removeChild(sprite);
       sprite.destroy();
     });
 
-    // Reset selected asset state
+    // Reset tracking sets
+    placedFloorsRef.current.clear();
+    placedObjectsRef.current.clear();
+
     setSelectedAsset(null);
 
-    // If currently placing/moving an asset, cancel placement
     if (movingAssetRef.current) {
       if (highlightGraphicRef.current) {
         highlightGraphicRef.current.clear();

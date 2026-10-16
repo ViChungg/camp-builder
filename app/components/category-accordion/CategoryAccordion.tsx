@@ -1,5 +1,5 @@
 import { ExpandMore } from "@mui/icons-material";
-import { Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
+import { Accordion, AccordionSummary, AccordionDetails, Box } from "@mui/material";
 import { AssetDef } from "../assets-drawer/AssetsDrawer";
 import Image from "next/image";
 import { usePlacement } from "../context/PlacementContext";
@@ -29,20 +29,24 @@ export default function CategoryAccordion({ title, assetDefs }: CategoryAccordio
       <AccordionDetails>
         <div className="flex gap-2 mt-2 flex-wrap">
           {assetDefs.map((asset) => (
-            <div
+            <Box
               key={asset.id}
               draggable
               onDragStart={(e) => handleDragStart(e, asset)}
               onClick={() => startPlacing(asset)}
               className="p-3 bg-neutral-700 hover:bg-neutral-600 rounded cursor-grab active:cursor-grabbing text-white justify-between items-center border border-neutral-600"
+              sx={{
+                height: 80,
+                width: 80
+              }}
             >
               <Image 
                 src={asset.src}
                 alt={asset.name}
-                width={48}
-                height={48}
+                width={80}
+                height={80}
               />
-            </div>
+            </Box>
           ))}
         </div>
       </AccordionDetails>
